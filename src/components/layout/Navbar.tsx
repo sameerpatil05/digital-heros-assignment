@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Trophy } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { label: "How It Works", href: "/#how-it-works" },
@@ -13,7 +14,7 @@ const navLinks = [
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const location = useLocation();
+  const { user, isAdmin, signOut } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
@@ -27,38 +28,46 @@ const Navbar = () => {
           </span>
         </Link>
 
-        {/* Desktop */}
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <a key={l.href} href={l.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               {l.label}
             </a>
           ))}
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/login">Sign In</Link>
-          </Button>
-          <Button variant="gold" size="sm" asChild>
-            <Link to="/signup">Get Started</Link>
-          </Button>
+          {user ? (
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/dashboard">Dashboard</Link>
+              </Button>
+              {isAdmin && (
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/admin">Admin</Link>
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={signOut}>
+                Sign Out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/login">Sign In</Link>
+              </Button>
+              <Button variant="gold" size="sm" asChild>
+                <Link to="/signup">Get Started</Link>
+              </Button>
+            </>
+          )}
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          className="md:hidden p-2 text-foreground"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
+        <button className="md:hidden p-2 text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 
-      {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -69,22 +78,30 @@ const Navbar = () => {
           >
             <div className="container py-4 flex flex-col gap-3">
               {navLinks.map((l) => (
-                <a
-                  key={l.href}
-                  href={l.href}
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground py-2"
-                  onClick={() => setMobileOpen(false)}
-                >
+                <a key={l.href} href={l.href} className="text-sm font-medium text-muted-foreground hover:text-foreground py-2" onClick={() => setMobileOpen(false)}>
                   {l.label}
                 </a>
               ))}
               <div className="flex gap-3 pt-2">
-                <Button variant="ghost" size="sm" className="flex-1" asChild>
-                  <Link to="/login">Sign In</Link>
-                </Button>
-                <Button variant="gold" size="sm" className="flex-1" asChild>
-                  <Link to="/signup">Get Started</Link>
-                </Button>
+                {user ? (
+                  <>
+                    <Button variant="ghost" size="sm" className="flex-1" asChild>
+                      <Link to="/dashboard">Dashboard</Link>
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => { signOut(); setMobileOpen(false); }}>
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" size="sm" className="flex-1" asChild>
+                      <Link to="/login">Sign In</Link>
+                    </Button>
+                    <Button variant="gold" size="sm" className="flex-1" asChild>
+                      <Link to="/signup">Get Started</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
